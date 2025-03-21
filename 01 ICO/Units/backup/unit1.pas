@@ -6,38 +6,56 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, StdCtrls,
-  ExtCtrls, RichMemo;
+  ExtCtrls, RichMemo, ClipBrd,LCLType,LCLIntf;
 
 type
 
   { TForm1 }
 
   TForm1 = class(TForm)
+    Bevel1: TBevel;
+    Bevel2: TBevel;
+    Bevel3: TBevel;
+    Bevel4: TBevel;
     ButtonDeleteNode: TButton;
     ButtonAddNode: TButton;
+    LabeledEdit1: TLabeledEdit;
+    LabeledEdit2: TLabeledEdit;
+    Panel2: TPanel;
+    PanelMenu1ComboBox: TComboBox;
     Icon1: TImage;
-    Icon2: TImage;
-    Icon3: TImage;
     Icon4: TImage;
     MenuLineTop: TPanel;
     MenuLineBottom: TPanel;
     OpenDialog1: TOpenDialog;
     PageControl1: TPageControl;
+    CostumButton1: TPanel;
+    CostumButton2: TPanel;
+    Panel1: TPanel;
+    PanelMenu1: TPanel;
+    PanelMenu2: TPanel;
     RichMemo1: TRichMemo;
     SaveDialog1: TSaveDialog;
+    StatusBar1: TStatusBar;
     TabSheetTexCode: TTabSheet;
     TabSheetTreeView: TTabSheet;
+    Timer1: TTimer;
     VisualTreeView: TTreeView;
     procedure Button1Click(Sender: TObject);
     procedure ButtonAddNodeClick(Sender: TObject);
     procedure ButtonDeleteNodeClick(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormDestroy(Sender: TObject);
+    procedure FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
     procedure Icon1Click(Sender: TObject);
     procedure Icon2Click(Sender: TObject);
     procedure Icon3Click(Sender: TObject);
     procedure Icon4Click(Sender: TObject);
     procedure RichMemo1Change(Sender: TObject);
+    procedure ButtonEnterGrau(Sender: TObject);
+    procedure ButtonLeaveGrau(Sender: TObject);
+    procedure Timer1Timer(Sender: TObject);
+    procedure AddNode();
   private
     FChangeStack: TStringList;
     procedure SaveTreeState;
@@ -46,6 +64,7 @@ type
     procedure SaveTreeToFile;
     procedure ImportTreeFromFile;
     procedure GenerateTex;
+
 
   public
 
@@ -65,7 +84,31 @@ begin
 
 end;
 
+procedure TForm1.ButtonEnterGrau(Sender: TObject);
+  begin
+    if Sender is tpanel then ((sender as TPanel).parent as tpanel).color:=$00E2E2E2;
+    if Sender is tlabel then ((sender as tlabel).parent as tpanel).color:=$00E2E2E2;
+    if Sender is timage then ((sender as timage).parent as tpanel).color:=$00E2E2E2;
+  end;
+procedure TForm1.ButtonLeaveGrau(Sender: TObject);
+begin
+    if Sender is tpanel then ((sender as TPanel).parent as tpanel).color:=cldefault;
+    if Sender is tlabel then ((sender as tlabel).parent as tpanel).color:=cldefault;
+    if Sender is timage then ((sender as timage).parent as tpanel).color:=cldefault;
+end;
+
+procedure TForm1.Timer1Timer(Sender: TObject);
+begin
+  StatusBar1.SimpleText:='';
+  Timer1.Enabled:=false;
+end;
+
 procedure TForm1.ButtonAddNodeClick(Sender: TObject);
+begin
+  AddNode();
+end;
+
+procedure TForm1.AddNode();
 var
   NewNode: TTreeNode;
   NodeText: string;
@@ -80,7 +123,7 @@ begin
       if NodeText = '' then
       begin
         NodeText := '[][] New Node';
-      end;
+      end
       else
       begin
         NodeText := '[][]'+ NodeText;
@@ -135,6 +178,18 @@ begin
   FChangeStack.Free;
 end;
 
+procedure TForm1.FormKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState
+  );
+begin
+   if ((Key = VK_N) and (ssCTRL in Shift)) then
+  begin
+       AddNode();
+       Key := 0;
+  end;
+end;
+
+
+
 procedure TForm1.Icon1Click(Sender: TObject);
 begin
   SaveTreeToFile;
@@ -153,6 +208,10 @@ end;
 procedure TForm1.Icon4Click(Sender: TObject);
 begin
   GenerateTex;
+  PageControl1.ActivePage:= TabSheetTexCode;
+  Clipboard.AsText:=RichMemo1.Lines.Text;
+  StatusBar1.SimpleText:='Copied to clipboard.';
+  Timer1.Enabled:=true;
 end;
 
 
@@ -181,7 +240,7 @@ begin
   LaTeXCode := LaTeXCode + 'level 3/.style={sibling distance=2cm, level distance=1.5cm}  ' + #13#10;
   LaTeXCode := LaTeXCode + '}  ' + #13#10;
 
-  LaTeXCode := LaTeXCode + '\begin{tikzpicture} [sibling distance=35mm, level distance=20mm, grow = right]' + #13#10;
+  LaTeXCode := LaTeXCode + '\begin{tikzpicture} [sibling distance='+LabeledEdit1.Text+'mm, level distance='+LabeledEdit2.Text+'mm, grow = '+PanelMenu1ComboBox.Text+']' + #13#10;
 
 
 
