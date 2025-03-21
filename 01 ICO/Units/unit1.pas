@@ -78,7 +78,7 @@ begin
     begin
       // if text empty set default name'
       if NodeText = '' then
-        NodeText := 'New Node';
+        NodeText := '[][] New Node';
 
       // Add new node under current node
       NewNode := VisualTreeView.Items.AddChild(VisualTreeView.Selected, NodeText);
@@ -158,10 +158,46 @@ begin
 
 end;
 
+procedure TForm1.GenerateTex;
+var
+  LaTeXCode: string;
+begin
+  // LaTeX Header
+  LaTeXCode := '\documentclass{article}' + #13#10;
+  LaTeXCode := LaTeXCode + '\usepackage{tikz}' + #13#10;
+  LaTeXCode := LaTeXCode + '\usetikzlibrary{trees}' + #13#10;
+  LaTeXCode := LaTeXCode + '\begin{document}' + #13#10;
+
+  LaTeXCode := LaTeXCode + '\tikzset{   ' + #13#10;
+  LaTeXCode := LaTeXCode + 'level 1/.style={sibling distance=4cm, level distance=2cm},  ' + #13#10;
+  LaTeXCode := LaTeXCode + 'level 2/.style={sibling distance=3cm, level distance=2cm},  ' + #13#10;
+  LaTeXCode := LaTeXCode + 'level 3/.style={sibling distance=2cm, level distance=1.5cm}  ' + #13#10;
+  LaTeXCode := LaTeXCode + '}  ' + #13#10;
+
+  LaTeXCode := LaTeXCode + '\begin{tikzpicture} [sibling distance=35mm, level distance=20mm, grow = right]' + #13#10;
+
+
+
+  //LaTeXCode := LaTeXCode + '\node' ;
+
+
+  // LaTeX-Code aus dem TreeView generieren
+  GenerateLaTeXCodeFromTreeView(VisualTreeView.Items.GetFirstNode, LaTeXCode,0);
+
+  // LaTeX Footer
+  LaTeXCode := LaTeXCode + '\end{tikzpicture}' + #13#10;
+  LaTeXCode := LaTeXCode + '\end{document}' + #13#10;
+
+  // Generierten LaTeX-Code im RichMemo anzeigen
+  RichMemo1.Lines.Text := LaTeXCode;
+end;
+
 procedure TForm1.GenerateLaTeXCodeFromTreeView(Node: TTreeNode; var LaTeXCode: string; Level: Integer);
 var
   ChildNode: TTreeNode;
   Indentation: string;
+  NodeText, EdgeTextOben, EdgeTextUnten, NodeName: string;
+  Parts: array of string;
 begin
   // Überprüfen, ob der Knoten zugewiesen ist
   if Assigned(Node) then
@@ -169,11 +205,48 @@ begin
     // Erzeuge Einrückung basierend auf der Ebene des Knotens
     Indentation := StringOfChar(' ', Level * 4);  // Vier Leerzeichen pro Ebene
 
+    // Knoten-Text aufteilen: [edgeTextoben][edgeTextunten]Name
+    NodeText := Node.Text;
+
+    // Teile den Text basierend auf den eckigen Klammern
+    Parts := NodeText.Split(['[', ']']);
+
+    // Überprüfen, ob mindestens 3 Teile vorhanden sind (oben, unten und Name)
+    if Length(Parts) >= 3 then
+    begin
+      EdgeTextOben := Parts[1];  // Der Text für die obere Kante
+      EdgeTextUnten := Parts[3]; // Der Text für die untere Kante
+      NodeName := Parts[4];      // Der eigentliche Name des Knotens
+    end
+    else
+    begin
+      // Falls kein Text in den Klammern ist, verwende den gesamten Text als Name
+      EdgeTextOben := '';
+      EdgeTextUnten := '';
+      NodeName := NodeText;
+    end;
+
     // Den aktuellen Knoten als LaTeX-Knoten hinzufügen
     if Level = 0 then
-      LaTeXCode := LaTeXCode + '\node {' + Node.Text + '}' + #13#10
+    begin
+      LaTeXCode := LaTeXCode + '\node {' + NodeName + '}' + #13#10;
+    end
     else
-      LaTeXCode := LaTeXCode + Indentation + 'child { node {' + Node.Text + '}' + #13#10;
+    begin
+      // Beginne das Child und füge die Kanten-Beschreibungen hinzu
+      LaTeXCode := LaTeXCode + Indentation + 'child { node {' + NodeName + '}';
+
+      // Wenn der obere Kanten-Text vorhanden ist, füge die obere Kante hinzu
+      if EdgeTextOben <> '' then
+        LaTeXCode := LaTeXCode + ' edge from parent node[above] {' + EdgeTextOben + '}';
+
+      // Wenn der untere Kanten-Text vorhanden ist, füge die untere Kante hinzu
+      if EdgeTextUnten <> '' then
+        LaTeXCode := LaTeXCode + ' edge from parent node[below] {' + EdgeTextUnten + '}';
+
+      // Schließe das child-Kommando ab
+     // LaTeXCode := LaTeXCode + '}' + #13#10;
+    end;
 
     // Alle Kindknoten rekursiv durchgehen und LaTeX-Code für sie erstellen
     ChildNode := Node.GetFirstChild;
@@ -193,6 +266,12 @@ begin
       LaTeXCode := LaTeXCode + Indentation + '}' + #13#10;
   end;
 end;
+
+
+
+
+
+
 
 procedure TForm1.SaveTreeState;
 var
@@ -234,11 +313,7 @@ begin
     // Den Stack nach der Rückgängigmachung um einen Schritt verringern
     FChangeStack.Delete(FChangeStack.Count - 1);
 
-    // Setze den Baum auf den letzten Zustand zurück (hier musst du den Baum erneut aufbauen)
-    // Hier könntest du eine Methode einbauen, die den Baum aus dem gespeicherten Zustand wiederherstellt
-    // Zum Beispiel:
-    // VisualTreeView.Items.Clear;
-    // RebuildTreeFromState(LastState);
+
   end
   else
   begin
@@ -250,29 +325,7 @@ end;
 
 
 
-procedure TForm1.GenerateTex;
-var
-  LaTeXCode: string;
-begin
-  // LaTeX Header
-  LaTeXCode := '\documentclass{article}' + #13#10;
-  LaTeXCode := LaTeXCode + '\usepackage{tikz}' + #13#10;
-  LaTeXCode := LaTeXCode + '\usetikzlibrary{trees}' + #13#10;
-  LaTeXCode := LaTeXCode + '\begin{document}' + #13#10;
-  LaTeXCode := LaTeXCode + '\begin{tikzpicture} [sibling distance=35mm, level distance=20mm, grow = right]' + #13#10;
-  //LaTeXCode := LaTeXCode + '\node' ;
 
-
-  // LaTeX-Code aus dem TreeView generieren
-  GenerateLaTeXCodeFromTreeView(VisualTreeView.Items.GetFirstNode, LaTeXCode,0);
-
-  // LaTeX Footer
-  LaTeXCode := LaTeXCode + '\end{tikzpicture}' + #13#10;
-  LaTeXCode := LaTeXCode + '\end{document}' + #13#10;
-
-  // Generierten LaTeX-Code im RichMemo anzeigen
-  RichMemo1.Lines.Text := LaTeXCode;
-end;
 
 
 procedure TForm1.SaveTreeToFile;

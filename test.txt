@@ -1,5 +1,13 @@
-Eintrag0
-    Eintrag1
-        Eintrag2
-            Eintrag3
-        Eintrag4
+Root
+    New Node
+        1
+        2
+        3
+    New Node
+        4
+        5
+        6
+    New Node
+        7
+        8
+        9
