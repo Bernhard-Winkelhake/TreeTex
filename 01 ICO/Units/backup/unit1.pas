@@ -78,7 +78,14 @@ begin
     begin
       // if text empty set default name'
       if NodeText = '' then
+      begin
         NodeText := '[][] New Node';
+      end;
+      else
+      begin
+        NodeText := '[][]'+ NodeText;
+        end;
+
 
       // Add new node under current node
       NewNode := VisualTreeView.Items.AddChild(VisualTreeView.Selected, NodeText);
@@ -313,11 +320,7 @@ begin
     // Den Stack nach der Rückgängigmachung um einen Schritt verringern
     FChangeStack.Delete(FChangeStack.Count - 1);
 
-    // Setze den Baum auf den letzten Zustand zurück (hier musst du den Baum erneut aufbauen)
-    // Hier könntest du eine Methode einbauen, die den Baum aus dem gespeicherten Zustand wiederherstellt
-    // Zum Beispiel:
-    // VisualTreeView.Items.Clear;
-    // RebuildTreeFromState(LastState);
+
   end
   else
   begin

@@ -3,7 +3,7 @@ object Form1: TForm1
   Height = 461
   Top = 202
   Width = 631
-  Caption = 'Form1'
+  Caption = 'TreeTex'
   ClientHeight = 461
   ClientWidth = 631
   OnCreate = FormCreate
@@ -214,9 +214,6 @@ object Form1: TForm1
         Width = 623
         Align = alClient
         HideSelection = False
-        Lines.Strings = (
-          'RichMemo1'
-        )
         OnChange = RichMemo1Change
         TabOrder = 0
         ZoomFactor = 1

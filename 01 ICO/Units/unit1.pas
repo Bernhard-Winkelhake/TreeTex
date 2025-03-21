@@ -78,7 +78,14 @@ begin
     begin
       // if text empty set default name'
       if NodeText = '' then
+      begin
         NodeText := '[][] New Node';
+      end
+      else
+      begin
+        NodeText := '[][]'+ NodeText;
+        end;
+
 
       // Add new node under current node
       NewNode := VisualTreeView.Items.AddChild(VisualTreeView.Selected, NodeText);
