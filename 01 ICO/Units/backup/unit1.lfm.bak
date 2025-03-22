@@ -272,6 +272,7 @@ object Form1: TForm1
         Width = 623
         Align = alClient
         TabOrder = 0
+        OnKeyDown = FormKeyDown
         Items.Data = {
           F9FFFFFF020001000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000
           00000004000000526F6F74

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Options>
+    <GeneralLoadingOption>sloped</GeneralLoadingOption>
+    <Level index="0">rectangle,draw,fill=white</Level>
+    <Level index="1">circle,draw,fill=black</Level>
+    <Level index="2">ellipse,draw,fill=gray</Level>
+</Options>

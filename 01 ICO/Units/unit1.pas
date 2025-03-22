@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, Forms, Controls, Graphics, Dialogs, ComCtrls, StdCtrls,
-  ExtCtrls, RichMemo, ClipBrd,LCLType,LCLIntf;
+  ExtCtrls, RichMemo, ClipBrd,LCLType,LCLIntf, DOM, XMLRead;
 
 type
 
@@ -56,6 +56,8 @@ type
     procedure ButtonLeaveGrau(Sender: TObject);
     procedure Timer1Timer(Sender: TObject);
     procedure AddNode();
+    function GetNodeLevelOptionsFromXML(Level: Integer): string;
+    function GetGeneralLoadingOptionFromXML: string;
   private
     FChangeStack: TStringList;
     procedure SaveTreeState;
@@ -240,7 +242,18 @@ begin
   LaTeXCode := LaTeXCode + 'level 3/.style={sibling distance=2cm, level distance=1.5cm}  ' + #13#10;
   LaTeXCode := LaTeXCode + '}  ' + #13#10;
 
-  LaTeXCode := LaTeXCode + '\begin{tikzpicture} [sibling distance='+LabeledEdit1.Text+'mm, level distance='+LabeledEdit2.Text+'mm, grow = '+PanelMenu1ComboBox.Text+']' + #13#10;
+  LaTeXCode := LaTeXCode + '\begin{tikzpicture} [sibling distance='+LabeledEdit1.Text +'mm,'+ #13#10;
+  LaTeXCode := LaTeXCode + ' level distance='+LabeledEdit2.Text+'mm,'+ #13#10;
+  LaTeXCode := LaTeXCode + ' grow = '+PanelMenu1ComboBox.Text ;
+
+  if (GetGeneralLoadingOptionFromXML() <> '') then
+  begin
+    LaTeXCode := LaTeXCode +','+ #13#10 +GetGeneralLoadingOptionFromXML();
+  end;
+
+
+
+  LaTeXCode := LaTeXCode + #13#10+ ']'+ #13#10  ;
 
 
 
@@ -258,80 +271,122 @@ begin
   RichMemo1.Lines.Text := LaTeXCode;
 end;
 
+function TForm1.GetGeneralLoadingOptionFromXML: string;
+var
+  Doc: TXMLDocument;
+  GeneralOptionNode: TDOMNode;
+begin
+  Result := ''; // Standardwert
+
+  if not FileExists('options.xml') then Exit;
+
+  // Lade die XML-Datei
+  ReadXMLFile(Doc, 'options.xml');
+
+  GeneralOptionNode := Doc.DocumentElement.FindNode('GeneralLoadingOption');
+
+  if Assigned(GeneralOptionNode) then
+  begin
+    Result := GeneralOptionNode.TextContent;
+  end;
+
+  Doc.Free;
+end;
+
+
+function TForm1.GetNodeLevelOptionsFromXML(Level: Integer): string;
+var
+  Doc: TXMLDocument;
+  RootNode, LevelNode: TDOMNode;
+  i: Integer;
+begin
+  Result := ''; // Standardwert
+
+  if not FileExists('options.xml') then Exit;
+
+  ReadXMLFile(Doc, 'options.xml');
+  RootNode := Doc.DocumentElement;
+
+
+  for i := 0 to RootNode.ChildNodes.Count - 1 do
+  begin
+    LevelNode := RootNode.ChildNodes[i];
+    if Assigned(LevelNode) and (LevelNode.NodeName = 'Level') then
+    begin
+      if StrToIntDef(LevelNode.Attributes.GetNamedItem('index').NodeValue, -1) = Level then
+      begin
+        Result := LevelNode.TextContent;
+        Break;
+      end;
+    end;
+  end;
+
+  Doc.Free;
+end;
+
 procedure TForm1.GenerateLaTeXCodeFromTreeView(Node: TTreeNode; var LaTeXCode: string; Level: Integer);
 var
   ChildNode: TTreeNode;
-  Indentation: string;
-  NodeText, EdgeTextOben, EdgeTextUnten, NodeName: string;
+  Indentation, NodeText, EdgeTextOben, EdgeTextUnten, NodeName, NodeOptions: string;
   Parts: array of string;
 begin
-  // Überprüfen, ob der Knoten zugewiesen ist
   if Assigned(Node) then
   begin
-    // Erzeuge Einrückung basierend auf der Ebene des Knotens
-    Indentation := StringOfChar(' ', Level * 4);  // Vier Leerzeichen pro Ebene
-
-    // Knoten-Text aufteilen: [edgeTextoben][edgeTextunten]Name
+    Indentation := StringOfChar(' ', Level * 4);
     NodeText := Node.Text;
-
-    // Teile den Text basierend auf den eckigen Klammern
     Parts := NodeText.Split(['[', ']']);
 
-    // Überprüfen, ob mindestens 3 Teile vorhanden sind (oben, unten und Name)
-    if Length(Parts) >= 3 then
+    if Length(Parts) >= 5 then
     begin
-      EdgeTextOben := Parts[1];  // Der Text für die obere Kante
-      EdgeTextUnten := Parts[3]; // Der Text für die untere Kante
-      NodeName := Parts[4];      // Der eigentliche Name des Knotens
+      EdgeTextOben := Parts[1];
+      EdgeTextUnten := Parts[3];
+      NodeName := Parts[4];
+    end
+    else if Length(Parts) = 3 then
+    begin
+      EdgeTextOben := Parts[1];
+      EdgeTextUnten := '';
+      NodeName := Parts[2];
     end
     else
     begin
-      // Falls kein Text in den Klammern ist, verwende den gesamten Text als Name
       EdgeTextOben := '';
       EdgeTextUnten := '';
       NodeName := NodeText;
     end;
 
-    // Den aktuellen Knoten als LaTeX-Knoten hinzufügen
+    // Lade die Optionen basierend auf der Tiefe (Level) des Knotens
+    NodeOptions := GetNodeLevelOptionsFromXML(Level);
+
     if Level = 0 then
     begin
-      LaTeXCode := LaTeXCode + '\node {' + NodeName + '}' + #13#10;
+      LaTeXCode := LaTeXCode + '\node' + '[' + NodeOptions + '] {' + NodeName + '}' + #13#10;
     end
     else
     begin
-      // Beginne das Child und füge die Kanten-Beschreibungen hinzu
-      LaTeXCode := LaTeXCode + Indentation + 'child { node {' + NodeName + '}';
-
-      // Wenn der obere Kanten-Text vorhanden ist, füge die obere Kante hinzu
-      if EdgeTextOben <> '' then
-        LaTeXCode := LaTeXCode + ' edge from parent node[above] {' + EdgeTextOben + '}';
-
-      // Wenn der untere Kanten-Text vorhanden ist, füge die untere Kante hinzu
-      if EdgeTextUnten <> '' then
-        LaTeXCode := LaTeXCode + ' edge from parent node[below] {' + EdgeTextUnten + '}';
-
-      // Schließe das child-Kommando ab
-     // LaTeXCode := LaTeXCode + '}' + #13#10;
+      LaTeXCode := LaTeXCode + Indentation + 'child { node' + '[' + NodeOptions + '] {' + NodeName + '}';
     end;
 
-    // Alle Kindknoten rekursiv durchgehen und LaTeX-Code für sie erstellen
     ChildNode := Node.GetFirstChild;
-    if Assigned(ChildNode) then
+    while Assigned(ChildNode) do
     begin
-      // Beginne die Kinderliste für den aktuellen Knoten
-      while Assigned(ChildNode) do
-      begin
-        // Rekursiver Aufruf für das Kind
-        GenerateLaTeXCodeFromTreeView(ChildNode, LaTeXCode, Level + 1);
-        ChildNode := ChildNode.GetNextSibling;
-      end;
+      GenerateLaTeXCodeFromTreeView(ChildNode, LaTeXCode, Level + 1);
+      ChildNode := ChildNode.GetNextSibling;
     end;
 
-    // Schließe den aktuellen Knoten (wichtig: bei rekursiven Aufrufen)
+    if EdgeTextOben <> '' then
+      LaTeXCode := LaTeXCode + ' edge from parent node[above] {' + EdgeTextOben + '}';
+    if EdgeTextUnten <> '' then
+      LaTeXCode := LaTeXCode + ' edge from parent node[below] {' + EdgeTextUnten + '}';
+
     if Level > 0 then
       LaTeXCode := LaTeXCode + Indentation + '}' + #13#10;
   end;
 end;
+
+
+
+
 
 
 
