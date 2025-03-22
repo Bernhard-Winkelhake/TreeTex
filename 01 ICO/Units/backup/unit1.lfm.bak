@@ -1,11 +1,11 @@
 object Form1: TForm1
-  Left = 759
-  Height = 461
-  Top = 202
-  Width = 631
+  Left = 364
+  Height = 490
+  Top = 239
+  Width = 796
   Caption = 'TreeTex'
-  ClientHeight = 461
-  ClientWidth = 631
+  ClientHeight = 490
+  ClientWidth = 796
   OnCreate = FormCreate
   OnDestroy = FormDestroy
   OnKeyDown = FormKeyDown
@@ -14,10 +14,10 @@ object Form1: TForm1
     Left = 0
     Height = 70
     Top = 0
-    Width = 631
+    Width = 796
     Align = alTop
     ClientHeight = 70
-    ClientWidth = 631
+    ClientWidth = 796
     TabOrder = 1
     object CostumButton1: TPanel
       Left = 5
@@ -227,11 +227,11 @@ object Form1: TForm1
   object MenuLineBottom: TPanel
     Left = 0
     Height = 29
-    Top = 409
-    Width = 631
+    Top = 438
+    Width = 796
     Align = alBottom
     ClientHeight = 29
-    ClientWidth = 631
+    ClientWidth = 796
     TabOrder = 0
     object ButtonAddNode: TButton
       Left = 8
@@ -256,7 +256,7 @@ object Form1: TForm1
     Left = 0
     Height = 339
     Top = 70
-    Width = 631
+    Width = 796
     ActivePage = TabSheetTreeView
     Align = alClient
     TabIndex = 0
@@ -264,14 +264,15 @@ object Form1: TForm1
     object TabSheetTreeView: TTabSheet
       Caption = 'Visual'
       ClientHeight = 311
-      ClientWidth = 623
+      ClientWidth = 788
       object VisualTreeView: TTreeView
         Left = 0
         Height = 311
         Top = 0
-        Width = 623
+        Width = 788
         Align = alClient
         TabOrder = 0
+        OnChange = VisualTreeViewChange
         OnKeyDown = FormKeyDown
         Items.Data = {
           F9FFFFFF020001000000FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF000000000000
@@ -282,12 +283,12 @@ object Form1: TForm1
     object TabSheetTexCode: TTabSheet
       Caption = 'Tex-Code'
       ClientHeight = 311
-      ClientWidth = 623
+      ClientWidth = 788
       object RichMemo1: TRichMemo
         Left = 0
         Height = 311
         Top = 0
-        Width = 623
+        Width = 788
         Align = alClient
         HideSelection = False
         OnChange = RichMemo1Change
@@ -299,13 +300,68 @@ object Form1: TForm1
   object StatusBar1: TStatusBar
     Left = 0
     Height = 23
-    Top = 438
-    Width = 631
+    Top = 467
+    Width = 796
     Panels = <    
       item
         Text = 'Copied to Clipboard'
         Width = 50
       end>
+  end
+  object MenuLineNode: TPanel
+    Left = 0
+    Height = 29
+    Top = 409
+    Width = 796
+    Align = alBottom
+    ClientHeight = 29
+    ClientWidth = 796
+    TabOrder = 4
+    object NodeEdit1: TLabeledEdit
+      Left = 80
+      Height = 23
+      Top = 0
+      Width = 112
+      EditLabel.Height = 15
+      EditLabel.Width = 56
+      EditLabel.Caption = 'Node Text:'
+      EditLabel.ParentColor = False
+      LabelPosition = lpLeft
+      TabOrder = 0
+    end
+    object NodeEdit2: TLabeledEdit
+      Left = 288
+      Height = 23
+      Top = 0
+      Width = 112
+      EditLabel.Height = 15
+      EditLabel.Width = 90
+      EditLabel.Caption = 'Edge Text Above:'
+      EditLabel.ParentColor = False
+      LabelPosition = lpLeft
+      TabOrder = 1
+    end
+    object NodeEdit3: TLabeledEdit
+      Left = 496
+      Height = 23
+      Top = 0
+      Width = 112
+      EditLabel.Height = 15
+      EditLabel.Width = 88
+      EditLabel.Caption = 'Edge Text Below:'
+      EditLabel.ParentColor = False
+      LabelPosition = lpLeft
+      TabOrder = 2
+    end
+    object NodeEditButton: TButton
+      Left = 616
+      Height = 25
+      Top = 0
+      Width = 75
+      Caption = 'Ok'
+      OnClick = NodeEditButtonClick
+      TabOrder = 3
+    end
   end
   object SaveDialog1: TSaveDialog
     Left = 536

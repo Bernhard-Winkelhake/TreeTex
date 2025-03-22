@@ -17,11 +17,19 @@ type
     Bevel2: TBevel;
     Bevel3: TBevel;
     Bevel4: TBevel;
+    Bevel5: TBevel;
+    CheckBox1: TCheckBox;
+    NodeEditButton: TButton;
     ButtonDeleteNode: TButton;
     ButtonAddNode: TButton;
     LabeledEdit1: TLabeledEdit;
     LabeledEdit2: TLabeledEdit;
+    NodeEdit1: TLabeledEdit;
+    MenuLineNode: TPanel;
+    NodeEdit2: TLabeledEdit;
+    NodeEdit3: TLabeledEdit;
     Panel2: TPanel;
+    Panel3: TPanel;
     PanelMenu1ComboBox: TComboBox;
     Icon1: TImage;
     Icon4: TImage;
@@ -34,6 +42,7 @@ type
     Panel1: TPanel;
     PanelMenu1: TPanel;
     PanelMenu2: TPanel;
+    PanelMenu3: TPanel;
     RichMemo1: TRichMemo;
     SaveDialog1: TSaveDialog;
     StatusBar1: TStatusBar;
@@ -51,6 +60,7 @@ type
     procedure Icon2Click(Sender: TObject);
     procedure Icon3Click(Sender: TObject);
     procedure Icon4Click(Sender: TObject);
+    procedure NodeEditButtonClick(Sender: TObject);
     procedure RichMemo1Change(Sender: TObject);
     procedure ButtonEnterGrau(Sender: TObject);
     procedure ButtonLeaveGrau(Sender: TObject);
@@ -58,6 +68,7 @@ type
     procedure AddNode();
     function GetNodeLevelOptionsFromXML(Level: Integer): string;
     function GetGeneralLoadingOptionFromXML: string;
+    procedure VisualTreeViewChange(Sender: TObject; Node: TTreeNode);
   private
     FChangeStack: TStringList;
     procedure SaveTreeState;
@@ -216,6 +227,30 @@ begin
   Timer1.Enabled:=true;
 end;
 
+procedure TForm1.NodeEditButtonClick(Sender: TObject);
+  var
+    CombinedName: string;
+    SelectedNode: TTreeNode;
+  begin
+    // Hole den aktuell ausgewählten Knoten im TreeView
+    SelectedNode := VisualTreeView.Selected;
+
+    // Stelle sicher, dass ein Knoten ausgewählt wurde
+    if Assigned(SelectedNode) then
+    begin
+      // Kombiniere die Teile aus den Edit-Feldern
+      CombinedName := '[' + NodeEdit2.Text + ']' + '[' + NodeEdit3.Text + ']' + NodeEdit1.Text;
+
+      // Setze den neuen Namen des Knotens im TreeView
+      SelectedNode.Text := CombinedName;
+    end
+    else
+    begin
+      ShowMessage('Bitte einen Knoten auswählen!');
+    end;
+  end;
+
+
 
 
 
@@ -231,10 +266,15 @@ var
   LaTeXCode: string;
 begin
   // LaTeX Header
+  if CheckBox1.Checked = true then
+  begin
   LaTeXCode := '\documentclass{article}' + #13#10;
   LaTeXCode := LaTeXCode + '\usepackage{tikz}' + #13#10;
   LaTeXCode := LaTeXCode + '\usetikzlibrary{trees}' + #13#10;
   LaTeXCode := LaTeXCode + '\begin{document}' + #13#10;
+
+  end;
+
 
   LaTeXCode := LaTeXCode + '\tikzset{   ' + #13#10;
   LaTeXCode := LaTeXCode + 'level 1/.style={sibling distance=4cm, level distance=2cm},  ' + #13#10;
@@ -264,8 +304,11 @@ begin
   GenerateLaTeXCodeFromTreeView(VisualTreeView.Items.GetFirstNode, LaTeXCode,0);
 
   // LaTeX Footer
-  LaTeXCode := LaTeXCode + '\end{tikzpicture}' + #13#10;
-  LaTeXCode := LaTeXCode + '\end{document}' + #13#10;
+  LaTeXCode := LaTeXCode + ';\end{tikzpicture}' + #13#10;
+  if CheckBox1.Checked = true then
+  begin
+    LaTeXCode := LaTeXCode + '\end{document}' + #13#10;
+  end;
 
   // Generierten LaTeX-Code im RichMemo anzeigen
   RichMemo1.Lines.Text := LaTeXCode;
@@ -292,6 +335,45 @@ begin
 
   Doc.Free;
 end;
+
+procedure TForm1.VisualTreeViewChange(Sender: TObject; Node: TTreeNode);
+var
+  NodeText, CaptionTop, CaptionBottom, NamePart: string;
+begin
+  if Assigned(Node) then
+  begin
+    NodeText := Node.Text;
+
+    // Initialisiere die Variablen für die Teile
+    CaptionTop := '';
+    CaptionBottom := '';
+    NamePart := '';
+
+    // Extrahiere "Caption Top"
+    if (Pos('[', NodeText) > 0) and (Pos(']', NodeText) > 0) then
+    begin
+      CaptionTop := Copy(NodeText, Pos('[', NodeText) + 1, Pos(']', NodeText) - Pos('[', NodeText) - 1);
+      NodeText := Copy(NodeText, Pos(']', NodeText) + 1, Length(NodeText));  // Entferne das gefundene "[Caption Top]"
+    end;
+
+    // Extrahiere "Caption Bottom"
+    if (Pos('[', NodeText) > 0) and (Pos(']', NodeText) > 0) then
+    begin
+      CaptionBottom := Copy(NodeText, Pos('[', NodeText) + 1, Pos(']', NodeText) - Pos('[', NodeText) - 1);
+      NodeText := Copy(NodeText, Pos(']', NodeText) + 1, Length(NodeText));  // Entferne das gefundene "[Caption Bottom]"
+    end;
+
+    // Der restliche Text ist der Name
+    NamePart := NodeText;
+
+
+    NodeEdit1.Text :=  NamePart;
+    NodeEdit2.Text:= CaptionTop;
+    NodeEdit3.Text:= CaptionBottom;
+
+  end;
+end;
+
 
 
 function TForm1.GetNodeLevelOptionsFromXML(Level: Integer): string;
