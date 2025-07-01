@@ -17,6 +17,8 @@ type
     Bevel2: TBevel;
     Bevel3: TBevel;
     Bevel4: TBevel;
+    Bevel5: TBevel;
+    CheckBox1: TCheckBox;
     NodeEditButton: TButton;
     ButtonDeleteNode: TButton;
     ButtonAddNode: TButton;
@@ -27,6 +29,7 @@ type
     NodeEdit2: TLabeledEdit;
     NodeEdit3: TLabeledEdit;
     Panel2: TPanel;
+    Panel3: TPanel;
     PanelMenu1ComboBox: TComboBox;
     Icon1: TImage;
     Icon4: TImage;
@@ -39,6 +42,7 @@ type
     Panel1: TPanel;
     PanelMenu1: TPanel;
     PanelMenu2: TPanel;
+    PanelMenu3: TPanel;
     RichMemo1: TRichMemo;
     SaveDialog1: TSaveDialog;
     StatusBar1: TStatusBar;
@@ -262,10 +266,15 @@ var
   LaTeXCode: string;
 begin
   // LaTeX Header
+  if CheckBox1.Checked = true then
+  begin
   LaTeXCode := '\documentclass{article}' + #13#10;
   LaTeXCode := LaTeXCode + '\usepackage{tikz}' + #13#10;
   LaTeXCode := LaTeXCode + '\usetikzlibrary{trees}' + #13#10;
   LaTeXCode := LaTeXCode + '\begin{document}' + #13#10;
+
+  end;
+
 
   LaTeXCode := LaTeXCode + '\tikzset{   ' + #13#10;
   LaTeXCode := LaTeXCode + 'level 1/.style={sibling distance=4cm, level distance=2cm},  ' + #13#10;
@@ -295,8 +304,11 @@ begin
   GenerateLaTeXCodeFromTreeView(VisualTreeView.Items.GetFirstNode, LaTeXCode,0);
 
   // LaTeX Footer
-  LaTeXCode := LaTeXCode + '\end{tikzpicture}' + #13#10;
-  LaTeXCode := LaTeXCode + '\end{document}' + #13#10;
+  LaTeXCode := LaTeXCode + ';\end{tikzpicture}' + #13#10;
+  if CheckBox1.Checked = true then
+  begin
+    LaTeXCode := LaTeXCode + '\end{document}' + #13#10;
+  end;
 
   // Generierten LaTeX-Code im RichMemo anzeigen
   RichMemo1.Lines.Text := LaTeXCode;

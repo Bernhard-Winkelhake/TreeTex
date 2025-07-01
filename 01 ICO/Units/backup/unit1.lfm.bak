@@ -223,6 +223,43 @@ object Form1: TForm1
         TabOrder = 2
       end
     end
+    object PanelMenu3: TPanel
+      Left = 364
+      Height = 68
+      Top = 1
+      Width = 156
+      Align = alLeft
+      ClientHeight = 68
+      ClientWidth = 156
+      TabOrder = 4
+      object Panel3: TPanel
+        Left = 1
+        Height = 15
+        Top = 52
+        Width = 154
+        Align = alBottom
+        BevelOuter = bvNone
+        Caption = 'Export'
+        TabOrder = 0
+      end
+      object CheckBox1: TCheckBox
+        Left = 6
+        Height = 19
+        Top = 33
+        Width = 149
+        Align = alBottom
+        BorderSpacing.Left = 5
+        Caption = 'As document'
+        TabOrder = 1
+      end
+    end
+    object Bevel5: TBevel
+      Left = 360
+      Height = 68
+      Top = 1
+      Width = 4
+      Align = alLeft
+    end
   end
   object MenuLineBottom: TPanel
     Left = 0
@@ -364,16 +401,17 @@ object Form1: TForm1
     end
   end
   object SaveDialog1: TSaveDialog
-    Left = 536
+    Left = 688
+    Top = 16
   end
   object OpenDialog1: TOpenDialog
-    Left = 592
+    Left = 688
   end
   object Timer1: TTimer
     Enabled = False
     Interval = 3000
     OnTimer = Timer1Timer
-    Left = 469
+    Left = 744
     Top = 8
   end
 end
